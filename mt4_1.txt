@@ -1,0 +1,325 @@
+//+------------------------------------------------------------------+
+//|                                                          独创1.mq4 |
+//|                        Copyright 2018, MetaQuotes Software Corp. |
+//|                                             https://www.mql5.com |
+//+------------------------------------------------------------------+
+#property copyright "Copyright 2018, MetaQuotes Software Corp."
+#property link      "https://www.mql5.com"
+#property version   "1.00"
+#property strict
+#property indicator_separate_window
+#property indicator_buffers 8
+#property indicator_plots   8
+//--- plot xiaoqushi
+#property indicator_label1  "xiaoqushi"
+#property indicator_type1   DRAW_LINE
+#property indicator_color1  clrGreen
+#property indicator_style1  STYLE_SOLID
+#property indicator_width1  1
+
+#property indicator_label2  "zhongqushi"
+#property indicator_type2   DRAW_LINE
+#property indicator_color2  clrYellow
+#property indicator_style2  STYLE_SOLID
+#property indicator_width2  1
+//--- plot daqushi
+#property indicator_label3  "daqushi"
+#property indicator_type3   DRAW_NONE
+#property indicator_color3  clrWhite
+#property indicator_style3  STYLE_SOLID
+#property indicator_width3  1
+//--- plot Label1
+#property indicator_label4  "Label1"
+#property indicator_type4   DRAW_LINE
+#property indicator_color4  clrWhite
+#property indicator_style4  STYLE_SOLID
+#property indicator_width4  1
+//--- plot Label2
+#property indicator_label5  "Label2"
+#property indicator_type5   DRAW_LINE
+#property indicator_color5  clrWhite
+#property indicator_style5  STYLE_SOLID
+#property indicator_width5  1
+
+#property indicator_label6  "Label3"
+#property indicator_type6   DRAW_LINE
+#property indicator_color6  clrGreen
+#property indicator_style6  STYLE_SOLID
+#property indicator_width6  1
+
+#property indicator_label7  "Label4"
+#property indicator_type7   DRAW_LINE
+#property indicator_color7  clrRed
+#property indicator_style7  STYLE_SOLID
+#property indicator_width7  1
+
+#property indicator_label8  "Label5"
+#property indicator_type8   DRAW_LINE
+#property indicator_color8  clrRed
+#property indicator_style8  STYLE_SOLID
+#property indicator_width8  1
+
+input int 大周期=850;
+input int 中周期=170;
+input int 小周期=34;
+
+//--- indicator buffers
+/*static double         xiaoqushiBuffer[];
+static double         zhongqushiBuffer[];
+static double         daqushiBuffer[];
+static double         Label1Buffer[];
+static double         Label2Buffer[];
+static double         xiao[];
+static double         zhong[];
+static double         da[];
+*/
+double         xiaoqushiBuffer[];
+double         zhongqushiBuffer[];
+double         daqushiBuffer[];
+double         Label1Buffer[];
+double         Label2Buffer[];
+double         Label3Buffer[];
+double         Label4Buffer[];
+double         Label5Buffer[];
+double         xiaoqushiBuffer1[];
+double         zhongqushiBuffer1[];
+double         daqushiBuffer1[];
+/*
+extern double         xiaoqushiBuffer[];
+extern double         zhongqushiBuffer[];
+extern double         daqushiBuffer[];
+extern double         Label1Buffer[];
+extern double         Label2Buffer[];
+extern double         xiao[];
+extern double         zhong[];
+extern double         da[];*/
+
+
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+  {
+//--- indicator buffers mapping
+   IndicatorDigits(Digits);
+   SetIndexBuffer(0,xiaoqushiBuffer);
+   SetIndexBuffer(1,zhongqushiBuffer);
+   SetIndexBuffer(2,daqushiBuffer);
+   SetIndexBuffer(3,Label1Buffer);
+   SetIndexBuffer(4,Label2Buffer);
+   SetIndexBuffer(5,Label3Buffer);
+   SetIndexBuffer(6,Label4Buffer);
+   SetIndexBuffer(7,Label5Buffer);
+   
+   ArraySetAsSeries(zhongqushiBuffer,true);
+   ArraySetAsSeries(xiaoqushiBuffer,true);
+   ArraySetAsSeries(daqushiBuffer,true);
+   ArraySetAsSeries(zhongqushiBuffer1,true);
+   ArraySetAsSeries(xiaoqushiBuffer1,true);
+   ArraySetAsSeries(daqushiBuffer1,true);
+   printf(iATR(NULL,0,5,0));
+   EventSetTimer(2);
+//---
+   return(INIT_SUCCEEDED);
+  }
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime &time[],
+                const double &open[],
+                const double &high[],
+                const double &low[],
+                const double &close[],
+                const long &tick_volume[],
+                const long &volume[],
+                const int &spread[])
+  {
+  if(rates_total<大周期)
+    {
+      return(0);
+    }
+   int i=0;
+   int limit;
+   int max = 1000;
+   //limit=rates_total-prev_calculated+1;
+   limit= max - prev_calculated;
+   
+   if(prev_calculated>0)limit++;
+   for (i=0;i<limit;i++)
+   {
+   daqushiBuffer[i]=iMA(NULL,0,大周期,0,MODE_EMA,PRICE_CLOSE,i);
+   zhongqushiBuffer[i]=iMA(NULL,0,中周期,0,MODE_EMA,PRICE_CLOSE,i);
+   xiaoqushiBuffer[i]=iMA(NULL,0,小周期,0,MODE_EMA,PRICE_CLOSE,i);
+   Label1Buffer[i]=11;
+   Label2Buffer[i]=7;
+   Label3Buffer[i]=0;
+   Label4Buffer[i]=-7;
+   Label5Buffer[i]=-11;
+   
+   //xiaoqushiBuffer[i]=Low[i];  
+   //xiao[i]=Low[i];
+   //xiao[i]=xiaoBuffer[i]-xiaoqushiBuffer[i];
+   //printf("%f %f %f",xiaoBuffer[i],xiaoqushiBuffer[i],xiao[i]);
+   ArrayCopy(xiaoqushiBuffer1,xiaoqushiBuffer,0,0,WHOLE_ARRAY);
+   ArrayCopy(zhongqushiBuffer1,zhongqushiBuffer,0,0,WHOLE_ARRAY);
+   ArrayCopy(daqushiBuffer1,daqushiBuffer,0,0,WHOLE_ARRAY);
+  /* }
+   ArrayCopy(xiaoqushiBuffer1,xiaoqushiBuffer,0,0,WHOLE_ARRAY);
+   ArrayCopy(zhongqushiBuffer1,zhongqushiBuffer,0,0,WHOLE_ARRAY);
+   ArrayCopy(daqushiBuffer1,daqushiBuffer,0,0,WHOLE_ARRAY);
+  
+ 
+    i=0;
+   
+    for (i=0;i<limit;i++)
+   { */ 
+   if((Low[i]-xiaoqushiBuffer1[i])>0&&(Low[i]-zhongqushiBuffer1[i])>0&&(Low[i]-daqushiBuffer1[i])>0)
+   {
+       xiaoqushiBuffer[i]=(Low[i]-xiaoqushiBuffer1[i]) ;
+       
+       zhongqushiBuffer[i]=(Low[i]-zhongqushiBuffer1[i]) ;
+      
+       if(daqushiBuffer1[i]!=0)
+       {
+       daqushiBuffer[i]=(Low[i]-daqushiBuffer1[i]) ;
+       }
+      
+       else
+       daqushiBuffer[i]=0;
+   }
+   else if((Low[i]-xiaoqushiBuffer1[i])<0&&(Low[i]-zhongqushiBuffer1[i])>0&&(Low[i]-daqushiBuffer1[i])>0)
+   {
+       xiaoqushiBuffer[i]=0;
+       zhongqushiBuffer[i]=(Low[i]-zhongqushiBuffer1[i]) ;
+       if(daqushiBuffer1[i]!=0)
+          {
+          daqushiBuffer[i]=(Low[i]-daqushiBuffer1[i]) ;
+          }
+         
+          else
+          daqushiBuffer[i]=0;
+   }
+   else if((Low[i]-xiaoqushiBuffer1[i])<0&&(Low[i]-zhongqushiBuffer1[i])<0&&(Low[i]-daqushiBuffer1[i])>0)
+   {
+       xiaoqushiBuffer[i]=0 ;
+       zhongqushiBuffer[i]=0 ;
+       if(daqushiBuffer1[i]!=0)
+          {
+          daqushiBuffer[i]=(Low[i]-daqushiBuffer1[i]) ;
+          }
+         
+          else
+          daqushiBuffer[i]=0;
+   }
+   else if((High[i]-xiaoqushiBuffer1[i])<0&&(High[i]-zhongqushiBuffer1[i])<0&&(High[i]-daqushiBuffer1[i])<0)
+   {
+    xiaoqushiBuffer[i]=(High[i]-xiaoqushiBuffer1[i]) ;
+    zhongqushiBuffer[i]=(High[i]-zhongqushiBuffer1[i]) ;
+    if(daqushiBuffer1[i]!=0)
+       {
+       daqushiBuffer[i]=(High[i]-daqushiBuffer1[i]) ;
+       }
+      
+       else
+       daqushiBuffer[i]=0;
+   }
+   else if((High[i]-xiaoqushiBuffer1[i])>0&&(High[i]-zhongqushiBuffer1[i])<0&&(High[i]-daqushiBuffer1[i])<0)
+   {
+       xiaoqushiBuffer[i]=0;
+       zhongqushiBuffer[i]=(High[i]-zhongqushiBuffer1[i]) ;
+       if(daqushiBuffer1[i]!=0)
+          {
+          daqushiBuffer[i]=(High[i]-daqushiBuffer1[i]) ;
+          }
+         
+          else
+          daqushiBuffer[i]=0;
+    }
+    else if((High[i]-xiaoqushiBuffer1[i])>0&&(High[i]-zhongqushiBuffer1[i])>0&&(High[i]-daqushiBuffer1[i])<0)
+   {
+       xiaoqushiBuffer[i]=0 ;
+       zhongqushiBuffer[i]=0 ;
+       if(daqushiBuffer1[i]!=0)
+          {
+          daqushiBuffer[i]=(High[i]-daqushiBuffer1[i]) ;
+          }
+         
+          else
+          daqushiBuffer[i]=0;
+    }
+    
+   else
+   {
+    xiaoqushiBuffer[i]=0;//(xiaoqushiBuffer[i]-High[i]) ;
+    zhongqushiBuffer[i]=0;//(zhongqushiBuffer[i]-High[i]) ;
+    daqushiBuffer[i]=0;//(daqushiBuffer[i]-High[i]) ;
+   }
+   
+   
+   }
+   int mark=0;
+  /* if (xiaoqushiBuffer[0]>0 && mark==0)
+          {Alert("可以下多单");
+          SendMail("real account","it's time to buy");
+           mark=1;
+           }*/
+   
+//--- return value of prev_calculated for next call
+  
+   return(rates_total);
+  }
+
+
+int selldanshu(double &op,double &lots)
+  {
+     int a=0;
+     op=0;
+     lots=0;
+     for(int i=0;i<OrdersTotal();i++)
+      {
+        if(OrderSelect(i,SELECT_BY_POS,MODE_TRADES)==true)
+          {
+            if(OrderSymbol()==Symbol() && OrderType()==OP_SELL )
+              {
+                a++;
+                op=OrderOpenPrice();
+                lots=OrderLots();
+              }
+          }
+      }
+    return(a);
+  }
+  
+  double sellprofit()
+  {
+     double a=0;
+     int t=OrdersTotal();
+     for(int i=t-1;i>=0;i--)
+         {
+           if(OrderSelect(i,SELECT_BY_POS,MODE_TRADES)==true)
+             {
+               if(OrderSymbol()==Symbol() && OrderType()==OP_SELL )
+                 {
+                   a=a+OrderProfit()+OrderCommission()+OrderSwap();
+                 }
+             }
+         }  
+    return(a);
+  }
+    
+double x,y;
+     
+      
+//+------------------------------------------------------------------+
+//| Timer function                                                   |
+//+------------------------------------------------------------------+
+void OnTimer()
+  {
+   printf(sellprofit());
+  }
+//+------------------------------------------------------------------+
+
+

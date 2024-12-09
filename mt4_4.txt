@@ -1,0 +1,45 @@
+//+------------------------------------------------------------------+
+//|                                                      StopLoss.mq4 |
+//|                        Copyright 2023, MetaQuotes Software Corp. |
+//|                                             https://www.mql5.com |
+//+------------------------------------------------------------------+
+#property copyright "MetaQuotes Software Corp."
+#property link      "https://www.mql5.com"
+#property version   "1.00"
+//+------------------------------------------------------------------+
+//| Script program start function                                    |
+//+------------------------------------------------------------------+
+void OnStart()
+  {
+   double accountBalance = AccountBalance();
+   Print("accountBalance:"+accountBalance);
+   double riskFraction = 0.05;
+   double riskAmount = accountBalance * riskFraction;
+   double pointValue = MarketInfo(Symbol(), MODE_TICKVALUE);
+   int stopLossPoints = riskAmount / pointValue;
+   printf("accountBalance:"+accountBalance);
+   printf("riskAmount:"+riskAmount);
+   printf("pointValue:"+pointValue);
+   printf("stopLossPoints:"+stopLossPoints);
+
+   for(int i=0; i<OrdersTotal(); i++)
+     {
+      if(OrderSelect(i, SELECT_BY_POS))
+        {
+         double stopLossPrice;
+         double buy_lots;
+         if(OrderType()==OP_BUY)
+           {
+            buy_lots += OrderLots();
+           }
+         else if(OrderType()==OP_SELL)
+           {
+            buy_lots -= OrderLots();
+           }
+         // Alert("修改还未成功！");
+         stopLossPrice = OrderOpenPrice() - stopLossPoints/buy_lots * Point;
+         OrderModify(OrderTicket(), OrderOpenPrice(), stopLossPrice, OrderTakeProfit(), 0, clrNONE);
+         Alert("修改成功！");
+        }
+     }
+  }
